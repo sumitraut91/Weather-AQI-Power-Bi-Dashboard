@@ -2,8 +2,8 @@
 
 
 <p align="center">
-  <img src="![Weather Forecast and AQI Dashboard.PNG)"alt="Weather Forecast and AQI Dashboard" width="100%"/>
-</p>  https://raw.githubusercontent.com/sumitraut91/Weather-AQI-Power-Bi-Dashboard/main/Weather%20Forecast%20and%20AQI%20Dashboard.PNG
+  <img src="https://raw.githubusercontent.com/sumitraut91/Weather-AQI-Power-Bi-Dashboard/main/Weather%20Forecast%20and%20AQI%20Dashboard.PNG" alt="Weather Forecast and AQI Dashboard" width="100%"/>
+</p> 
 
 <p align="center">
   <img src="https://img.shields.io/badge/Power%20BI-F2C811?style=for-the-badge&logo=powerbi&logoColor=black" />

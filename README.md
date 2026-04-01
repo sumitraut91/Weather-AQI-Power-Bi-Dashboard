@@ -2,7 +2,7 @@
 
 
 <p align="center">
-  <img src="![Weather Forecast and AQI Dashboard](https://github.com/user-attachments/assets/c7d7c2ab-69d0-478e-875b-9e4499411b1c)"alt="Weather Forecast and AQI Dashboard" width="100%"/>
+  <img src="![Weather Forecast and AQI Dashboard.PNG)"alt="Weather Forecast and AQI Dashboard" width="100%"/>
 </p>
 
 <p align="center">
@@ -72,13 +72,13 @@ Urban residents and planners often rely on scattered sources for weather and air
 | # | City | State |
 |---|---|---|
 | 1 | Bengaluru | Karnataka |
-| 2 | Chennai | Tamil Nadu |
+| 2 | Dehradun | Uttarakhand |
 | 3 | Hyderabad | Telangana |
 | 4 | Kolkata | West Bengal |
 | 5 | Mumbai | Maharashtra |
 | 6 | Nagpur | Maharashtra |
-| 7 | Panaji | Goa |
-| 8 | Thiruvananthapuram | Kerala |
+| 7 | Pune | Maharashtra |
+| 8 | Noida | Uttar Pradesh |
 
 ---
 
@@ -90,7 +90,7 @@ Urban residents and planners often rely on scattered sources for weather and air
 | **Endpoint** | `https://api.weatherapi.com/v1/forecast.json` |
 | **Parameters** | `city`, `days=7`, `aqi=yes` |
 | **Format** | Nested JSON |
-| **Supporting File** | `Bg_Img.xlsx` — maps weather condition text to background image URLs |
+
 
 **Metrics collected per city:**
 
@@ -124,50 +124,31 @@ All transformations were done inside **Power Query (M Language)**.
 - Retained only the live snapshot per city
 - Removed forecast and hourly columns; cleaned nulls
 
-### Background Image Table
-- Loaded `Bg_Img.xlsx`
-- Mapped weather condition strings (e.g., "Partly Cloudy") to corresponding image URLs for dynamic background switching
 
 ---
 
 ## 🗃️ Data Model
 
-The model follows a **Star Schema** with three fact tables connected to dimension and helper tables.
+The data model in Power BI was designed to connect fact tables (live, daily, hourly) with supporting dimension and helper tables, enabling flexible and dynamic weather analysis.
 
-```
-┌─────────────┐        ┌──────────────┐        ┌────────────────┐
-│  Current    │        │ Forecast_Day │        │ Forecast_Hour  │
-│  (Fact)     │        │   (Fact)     │        │    (Fact)      │
-└──────┬──────┘        └──────┬───────┘        └───────┬────────┘
-       │                      │                        │
-       └──────────────────────┼────────────────────────┘
-                              │
-                        ┌─────▼──────┐
-                        │   Master   │
-                        └─────┬──────┘
-                              │
-              ┌───────────────┼───────────────┐
-              ▼               ▼               ▼
-       ┌────────────┐  ┌───────────┐  ┌───────────────┐
-       │ Weather_Bg │  │  Measures │  │  Date Tables  │
-       │ (Dimension)│  │ (Helper)  │  │  (Dimension)  │
-       └────────────┘  └───────────┘  └───────────────┘
-```
+### Tables Used:
 
-| Table | Type | Description |
-|---|---|---|
-| `Current` | Fact | Live weather & AQI readings per city |
-| `Forecast_Day` | Fact | Day-level forecasted conditions |
-| `Forecast_Hour` | Fact | Hour-level forecasted conditions |
-| `Master` | Fact | Source of truth for multi-city refresh |
-| `Weather_Bg` | Dimension | Condition-to-background-image mapping |
-| `Measures` | Helper | Disconnected table that organizes all DAX measures |
-| Date Tables | Dimension | Connected to all timestamp columns for time intelligence |
+- Current (Fact Table) → Central table for live weather and air quality measures (temperature, humidity, pollutant levels) by city and timestamp.
+- Forecast_Day (Fact Table) → Day-level forecasted weather per city, including temperatures, rain chances, and astro data (sunrise/sunset).
+- Forecast_Hour (Fact Table) → Hour-level forecasted weather, enabling granular trend analysis and detailed visualizations.
+- Master (Fact Table) → Integrates metadata for multi-source refresh and time-point validation.
+- Measuress (Helper Table) → A disconnected table created specifically to group and organize all DAX measures.
+- City-specific tables (Dimension Tables) → Extend easy multi-location tracking, promoting modularity and separation of city datasets.
+  
+### Time Intelligence:
 
-**Key relationships:**
-- `Current` → `Forecast_Day` / `Forecast_Hour`: One-to-Many on city + date
-- `Weather_Bg` ↔ `Current`: **Bidirectional** — drives real-time background switching
-- Date tables linked across all fact tables for drill-down by day, week, month
+Dedicated Date tables connected to timestamps across Current, Forecast_Day, Forecast_Hour, and Data_Refresh.
+Enables analysis by day of week, month, custom periods, and precise filtering for historical vs. forecast trends.
+Relationship Setup:
+
+One-to-Many link Current with Forecast_Day and Forecast_Hour on city and date/time.
+Bi-directional relationship between [Weather_Bg] and [Current] allows real-time condition-driven background changes.
+City, day, and hour tables are synchronized to support drill-downs from overview → daily → hourly weather insights.
 
 ---
 
@@ -278,7 +259,7 @@ Sunset  = FORMAT(Forecast_day[forecast.forecastday.astro.sunset],  "hh:mm AM/PM"
 | **Power Query (M)** | JSON ingestion, ETL, table transformations |
 | **DAX** | KPI measures, dynamic labels, conditional formatting logic |
 | **WeatherAPI.com** | Live weather & AQI data via REST API |
-| **Excel (Bg_Img.xlsx)** | Weather condition → background image mapping |
+
 
 ---
 
@@ -288,36 +269,10 @@ Sunset  = FORMAT(Forecast_day[forecast.forecastday.astro.sunset],  "hh:mm AM/PM"
 weather-aqi-dashboard/
 │
 ├── Weather_Forecast_and_AQI_Dashboard.pbix   ← Power BI report file
-├── Weather_Forecast_and_AQI_Dashboard.JPG    ← Dashboard screenshot
-├── Bg_Img.xlsx                               ← Condition-to-background mapping
+├── Weather_Forecast_and_AQI_Dashboard.PNG    ← Dashboard screenshot
 └── README.md                                 ← Project documentation
 ```
 
 ---
 
-## 🚀 How to Run Locally
 
-1. **Clone this repository**
-   ```bash
-   git clone https://github.com/your-username/weather-aqi-dashboard.git
-   cd weather-aqi-dashboard
-   ```
-
-2. **Get a free API key** from [weatherapi.com](https://www.weatherapi.com/)
-
-3. **Open** `Weather_Forecast_and_AQI_Dashboard.pbix` in Power BI Desktop
-
-4. **Update the API key** in Power Query:
-   - Go to **Home → Transform Data**
-   - In the query for any city, locate the API URL parameter
-   - Replace the existing key with your own
-
-5. **Click Refresh All** — the dashboard will pull fresh live data for all 8 cities
-
-> ⚠️ **Note:** The free tier of WeatherAPI supports up to **3-day forecast**. A paid plan is required to replicate the full **7-day forecast** shown in this dashboard.
-
----
-
-<p align="center">
-  Built with ❤️ using <strong>Power BI</strong> &nbsp;|&nbsp; Data sourced from <a href="https://www.weatherapi.com/">WeatherAPI.com</a>
-</p>
